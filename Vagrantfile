@@ -11,7 +11,7 @@ Vagrant::Config.run do |config|
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  # config.vm.box_url = "http://domain.com/path/to/above.box"
+  config.vm.box_url = "http://yum.mnxsolutions.com/vagrant/centos_56_32.box"
 
   # Boot with a GUI so you can see the screen. (Default is headless)
   # config.vm.boot_mode = :gui
@@ -29,8 +29,9 @@ Vagrant::Config.run do |config|
 
   # Forward a port from the guest to the host, which allows for outside
   # computers to access the VM, whereas host only networking does not.
-  # config.vm.forward_port 80, 8080
-
+  config.vm.host_name = "lampsrv"
+  config.vm.network :hostonly, "192.168.56.20"
+  config.vm.forward_port 80, 8080
   # Share an additional folder to the guest VM. The first argument is
   # an identifier, the second is the path on the guest to mount the
   # folder, and the third is the path on the host to the actual folder.
@@ -63,8 +64,29 @@ Vagrant::Config.run do |config|
   # path, and data_bags path (all relative to this Vagrantfile), and adding 
   # some recipes and/or roles.
   #
-  # config.vm.provision :chef_solo do |chef|
-  #   chef.cookbooks_path = "../my-recipes/cookbooks"
+  config.vm.provision :chef_solo do |chef|
+    chef.cookbooks_path = "cookbooks"
+# We're going to download our cookbooks from the web
+  #	chef.recipe_url = "https://github.com/opscode-cookbooks/apt.git"
+  # 	chef.recipe_url = "https://github.com/opscode-cookbooks/apache2.git"
+  #	chef.recipe_url = "https://github.com/opscode-cookbooks/mysql.git"
+  #	chef.recipe_url = "https://github.com/opscode-cookbooks/php.git"
+	chef.add_recipe "apt"
+    	chef.add_recipe "apache2"
+   	chef.add_recipe "mysql"
+   	chef.add_recipe "mysql::server"
+   	chef.add_recipe "php"
+   	chef.add_recipe "php::module_apc"
+  	chef.add_recipe "php::module_curl"
+  	chef.add_recipe "php::module_mysql"
+  	chef.add_recipe "apache2::mod_php5"
+ 	chef.add_recipe "apache2::mod_rewrite"
+ 	chef.json = {
+        :mysql => {
+            :server_root_password => 'root',
+            :bind_address => '127.0.0.1'
+      }
+    } end
   #   chef.roles_path = "../my-recipes/roles"
   #   chef.data_bags_path = "../my-recipes/data_bags"
   #   chef.add_recipe "mysql"
@@ -72,7 +94,6 @@ Vagrant::Config.run do |config|
   #
   #   # You may also specify custom JSON attributes:
   #   chef.json = { :mysql_password => "foo" }
-  # end
 
   # Enable provisioning with chef server, specifying the chef server URL,
   # and the path to the validation key (relative to this Vagrantfile).
@@ -84,10 +105,11 @@ Vagrant::Config.run do |config|
   # HTTP instead of HTTPS depending on your configuration. Also change the
   # validation key to validation.pem.
   #
-  # config.vm.provision :chef_client do |chef|
+  #config.vm.provision :chef_client do |chef|
   #   chef.chef_server_url = "https://api.opscode.com/organizations/ORGNAME"
   #   chef.validation_key_path = "ORGNAME-validator.pem"
-  # end
+  
+    
   #
   # If you're using the Opscode platform, your validator client is
   # ORGNAME-validator, replacing ORGNAME with your organization name.
